@@ -1,0 +1,107 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+android {
+    compileSdkVersion 17
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 8
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:23.0.0'
+    compile 'com.jakewharton:butterknife:8.1.0'
+    compile 'com.alibaba:fastjson:1.2.12'
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+group = 'com.lazy2b.libs'// library库包名
+version = '1.0.1' /* 版本号 */
+
+def siteUrl = 'https://github.com/lazy2b/LazyLibs'      // 项目的主页
+def gitUrl = 'http://www.lazy2b.com'   // Git仓库的url
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                // Add your description here
+                name '啦啦啦.'     //项目描述
+                url siteUrl
+                // Set your license
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'lazy2b'        //填写的一些基本信息
+                        name 'jack.lin'
+                        email 'jack.lin@qq.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+javadocJar.dependsOn javadoc
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")//在个人中心的路径里可以找到
+    key = properties.getProperty("bintray.apikey") //API key
+    pkg {
+        repo = 'maven' //必须设定一个值，这里选择maven
+        name = 'com.lazy2b.test.libs' //必须，包名    //发布到JCenter上的项目名字
+        version {
+            name = '1.0.1-tuts' //版本名称
+            desc = 'My test upload' //版本描述
+            //released  =new Date() //上传过程中如果此处报错，可以注释掉此句
+            vcsTag = '1.0.1' //版本
+        }
+        licenses = ['Apache-2.0'] //开源协议
+        vcsUrl = gitUrl //指定项目git地址
+        websiteUrl = siteUrl //项目官网地址
+        publish = true
+    }
+    configurations = ['archives'] //必须为archives
+}
